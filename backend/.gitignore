@@ -1,0 +1,24 @@
+# 1. โฟลเดอร์ Library (เพราะมันหนักมาก และแต่ละเครื่อง OS ไม่เหมือนกัน)
+node_modules/
+
+# 2. โฟลเดอร์โค้ดที่ถูก Compile แล้ว (เดี๋ยวเราไปสั่ง Build ใหม่ตอนทำ Docker ได้)
+dist/
+build/
+
+# 3. ไฟล์เก็บความลับ (สำคัญมาก! ห้ามเอาขึ้น Git เด็ดขาด)
+.env
+.env.*
+!.env.example   # ยกเว้นไฟล์ .env.example ให้อัปโหลดได้ (เพื่อเป็นตัวอย่าง)
+
+# 4. ไฟล์ Log ต่างๆ 
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 5. ไฟล์ขยะของระบบปฏิบัติการ (Mac / Windows)
+.DS_Store
+Thumbs.db
+
+# 6. โฟลเดอร์เก็บผลเทส (ถ้าอนาคตมีการเขียน Unit Test)
+coverage/
