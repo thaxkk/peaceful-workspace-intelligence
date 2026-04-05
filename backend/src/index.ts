@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import pino from 'pino';
 import dotenv from 'dotenv';
+import cors from 'cors';
 
 dotenv.config();
 
@@ -8,6 +9,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 const logger = pino({ level: process.env.LOG_LEVEL || 'info' });
 
+app.use(cors());
 app.use(express.json());
 
 // ==========================================
