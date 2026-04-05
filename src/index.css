@@ -12,6 +12,7 @@
   --color-accent: #f3fbf1;
   --color-text: #000;
   --color-text-light: #ffffff;
+  --color-bg2: #eef5f0;
 }
 
 html, body, #root {
