@@ -1,0 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+* {
+  font-family: 'Poppins','Bai Jamjuree', sans-serif;
+}
+
+:root {
+  --color-primary: #64868E;
+  --color-secondary: #98b4a6;
+  --color-background: #d1e4d1;
+  --color-accent: #f3fbf1;
+  --color-text: #000;
+  --color-text-light: #ffffff;
+}
