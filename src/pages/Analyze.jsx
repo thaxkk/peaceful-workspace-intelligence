@@ -5,6 +5,7 @@ import BotBubble from '../components/BotBubble'
 import AiAvatar from '../components/AiAvatar'
 import ToneSelector from '../components/ToneSelector'
 import { checkFormality, rewriteMessage } from '../services/api'
+import logo from '../assets/image.png'
 
 export default function Analyze() {
   const [message, setMessage] = useState('')
@@ -74,8 +75,8 @@ export default function Analyze() {
 
       {/* ก่อนส่ง */}
       {!hasMessages && (
-        <div className="flex-1 flex flex-col items-center justify-center gap-6 px-4">
-          <img src="/logo.png" alt="logo" className="w-64" />
+        <div className="flex-1 flex flex-col items-center justify-center gap-20 px-4 mb-20">
+          <img src={logo} alt="logo" className="w-64" />
           <InputBar message={message} setMessage={setMessage} handleSend={handleSend} />
         </div>
       )}
@@ -84,14 +85,14 @@ export default function Analyze() {
       {hasMessages && (
         <>
           <div className="flex-1 overflow-y-auto px-4 py-6">
-            <div className="max-w-2xl mx-auto flex flex-col gap-4">
+            <div className="max-w-2xl mx-auto flex flex-col gap-4 content-center">
               {messages.map((msg, i) => (
                 <div key={i}>
 
                   {msg.role === 'user' && (
                     <div className="flex justify-end">
                       <div className="px-5 py-3 rounded-2xl text-sm text-white max-w-xs"
-                        style={{ background: '#4a8c7f' }}>
+                        style={{ background: 'var(--color-primary)' }}>
                         {msg.text}
                       </div>
                     </div>
