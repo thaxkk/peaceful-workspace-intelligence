@@ -26,7 +26,7 @@ export default function Analyze() {
       if (result.isFormal) {
         setMessages((prev) => [...prev, {
           role: 'bot', type: 'formal',
-          text: 'สุภาพมากครับ ไม่ต้องแก้ไขอะไร 😊',
+          text: 'สุภาพมากคับ บบ（づ￣3￣）づ╭💖～  ',
         }])
       } else {
         setMessages((prev) => [...prev, {
@@ -108,7 +108,7 @@ export default function Analyze() {
 
                   {msg.role === 'bot' && msg.type === 'select-tone' && (
                     <div className="flex flex-col gap-3">
-                      <BotBubble text="ไม่สุภาพเลยนะคับ อยากให้แก้เป็นโทนไหนดีคับ?" />
+                      <BotBubble text="ไม่สุภาพเลยนะคับ บบ อยากให้ช่วยแก้เป็นโทนไหนดีคับ" />
                       <ToneSelector
                         originalMessage={msg.originalMessage}
                         onSelect={(original, tone) => handleSelectTone(original, tone, i)}
@@ -129,7 +129,6 @@ export default function Analyze() {
 
                   {msg.role === 'bot' && msg.type === 'rewritten' && (
                     <div className="flex flex-col gap-2">
-                      <div className="ml-11 text-xs text-gray-400">โทน: {msg.appliedTone}</div>
                       <BotBubble text={msg.rewrittenMessage} />
                     </div>
                   )}
