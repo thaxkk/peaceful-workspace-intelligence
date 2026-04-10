@@ -22,8 +22,8 @@ def analyze_message(req: MessageRequest):
     classification = classify_politeness(req.text)
 
     rewritten = None
-    # rewrite เฉพาะตอนที่ impolite หรือ score ต่ำกว่า threshold
-    if classification["label"] == "impolite" or classification["score"] < 0.6:
+
+    if classification["label"] == "impolite" or classification["score"] < 0.90:
         rewritten = rewrite_message(req.text, tone=req.tone)
 
     return MessageResponse(

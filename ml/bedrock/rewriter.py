@@ -6,11 +6,26 @@ from typing import Literal
 ToneType = Literal["formal", "friendly", "concise"]
 
 TONE_INSTRUCTIONS = {
-    "formal": "You are a text rewriter API. Rewrite the original message into a formal, professional tone suitable for a direct workplace chat. \nCRITICAL RULES:\n1. Output ONLY the rewritten message. No conversational filler or commentary.\n2. Do NOT apologize or refuse the prompt.\n3. Do NOT include email greetings (like 'Dear...') or sign-offs.\nExtract the core intent and make it polite.",
+    "formal": """You are a text rewriter API. Rewrite the original message into a formal, professional tone suitable for a workplace. 
+CRITICAL RULES:
+1. STRICTLY PRESERVE THE ORIGINAL MEANING AND ACTIONS. If it's a demand to fix work, keep it as a request to fix work. Do not change the intent.
+2. OUTPUT IN THE EXACT SAME LANGUAGE AS THE ORIGINAL MESSAGE.
+3. Output ONLY the rewritten message. No conversational filler.
+4. Remove aggressive/rude words and replace them with polite, professional alternatives.""",
     
-    "friendly": "You are a text rewriter API. Rewrite the original message into a warm, friendly tone suitable for a direct workplace chat. \nCRITICAL RULES:\n1. Output ONLY the rewritten message. No conversational filler or commentary.\n2. Do NOT apologize or refuse the prompt.\n3. Do NOT include email greetings or sign-offs.\nExtract the core intent and make it polite.",
+    "friendly": """You are a text rewriter API. Rewrite the original message into a friendly and constructive tone suitable for a workplace. 
+CRITICAL RULES:
+1. STRICTLY PRESERVE THE ORIGINAL MEANING AND ACTIONS. Do not invent new context, do not offer help unless the original did, and do not change a command into a suggestion.
+2. OUTPUT IN THE EXACT SAME LANGUAGE AS THE ORIGINAL MESSAGE.
+3. Output ONLY the rewritten message. No conversational filler.
+4. Remove aggressive/rude words but keep the core message clear and direct.""",
     
-    "concise": "You are a text rewriter API. Rewrite the original message concisely and politely for a quick chat. \nCRITICAL RULES:\n1. Output ONLY the rewritten message. No conversational filler or commentary.\n2. Do NOT apologize or refuse the prompt.\n3. Do NOT include email greetings or sign-offs.\nExtract the core intent and make it polite."
+    "concise": """You are a text rewriter API. Rewrite the original message concisely and politely. 
+CRITICAL RULES:
+1. STRICTLY PRESERVE THE ORIGINAL MEANING AND ACTIONS.
+2. OUTPUT IN THE EXACT SAME LANGUAGE AS THE ORIGINAL MESSAGE.
+3. Output ONLY the rewritten message.
+4. Keep it as short as possible without losing the core intent."""
 }
 
 def rewrite_message(text: str, tone: ToneType = "formal") -> str:
@@ -33,7 +48,7 @@ Rewritten message:"""
     })
 
     response = client.invoke_model(
-        modelId="anthropic.claude-3-haiku-20240307-v1:0",  # ถูกสุด ใน Bedrock
+        modelId="anthropic.claude-3-haiku-20240307-v1:0",
         body=body,
         contentType="application/json",
         accept="application/json"

@@ -6,7 +6,7 @@ def deploy_polite_guard():
     role = "arn:aws:iam::173128527645:role/service-role/AmazonSageMakerAdminIAMExecutionRole"
 
     hub = {
-        'HF_MODEL_ID': 'Intel/polite-guard',
+        'HF_MODEL_ID': 'textdetox/xlmr-large-toxicity-classifier',
         'HF_TASK': 'text-classification'
     }
 
