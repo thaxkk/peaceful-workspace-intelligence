@@ -107,7 +107,7 @@ export default function Analyze() {
 
                   {msg.role === 'user' && (
                     <div className="flex justify-end">
-                      <div className=    "px-5 py-3 rounded-2xl text-sm text-white max-w-xs"
+                      <div className=    "px-5 py-3 rounded-2xl text-sm text-white max-w-110 wrap-break-word whitespace-pre-wrap"
                         style={{ background: 'var(--color-primary)' }}>
                         {msg.text}
                       </div>
