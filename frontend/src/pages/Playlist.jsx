@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import Navbar from '../components/Navbar'
 
 const DEFAULT_PLAYLIST = {
-  embedUrl: 'https://open.spotify.com/embed/playlist/3SWnYxh0WpSF4o2cqlN3tS',
+  embedUrl: 'https://open.spotify.com/playlist/3SWnYxh0WpSF4o2cqlN3tS?si=5e7e18fb51de4437',
   platform: 'spotify',
 }
 
@@ -71,7 +71,7 @@ export default function Playlist() {
     <div className="min-h-screen flex flex-col w-full" style={{ background: 'var(--color-bg2)' }}>
       <Navbar />
 
-      <div className="flex-1 px-4 py-6 pb-28">
+      <div className="flex-1 px-4 py-6 pt-20">
         <div className="max-w-2xl mx-auto flex flex-col gap-6">
 
           <div className="flex flex-col gap-2">
