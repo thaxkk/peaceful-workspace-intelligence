@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Navbar from '../components/Navbar'
 import InputBar from '../components/InputBar'
 import BotBubble from '../components/BotBubble'
@@ -12,10 +12,22 @@ export default function Analyze() {
   const [messages, setMessages] = useState([])
   const [loading, setLoading] = useState(false)
 
+
   const hasMessages = messages.length > 0
+
+  const messagesEndRef = useRef(null)
+  
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages, loading])
 
   const handleSend = async () => {
     if (!message.trim()) return
+    
     const originalText = message
     setMessages((prev) => [...prev, { role: 'user', text: originalText }])
     setMessage('')
@@ -52,9 +64,11 @@ export default function Analyze() {
       setMessages((prev) =>
         prev.map((m, i) =>
           i === msgIndex ? {
-            role: 'bot', type: 'rewritten',
+            role: 'bot',
+            type: 'rewritten',
             appliedTone: result.appliedTone,
             rewrittenMessage: result.rewrittenMessage,
+            originalMessage: originalMessage, // ← เก็บไว้ให้เลือกโทนใหม่ได้
           } : m
         )
       )
@@ -71,7 +85,9 @@ export default function Analyze() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: '#eef5f0' }}>
-      <Navbar />
+      <div className="mb-10">
+        <Navbar />
+      </div>
 
       {/* ก่อนส่ง */}
       {!hasMessages && (
@@ -84,14 +100,14 @@ export default function Analyze() {
       {/* หลังส่ง */}
       {hasMessages && (
         <>
-          <div className="flex-1 overflow-y-auto px-4 py-6">
+          <div className="flex-1 overflow-y-auto px-4 py-6 pt-8 pb-32">
             <div className="max-w-2xl mx-auto flex flex-col gap-4 content-center">
               {messages.map((msg, i) => (
                 <div key={i}>
 
                   {msg.role === 'user' && (
                     <div className="flex justify-end">
-                      <div className="px-5 py-3 rounded-2xl text-sm text-white max-w-xs"
+                      <div className=    "px-5 py-3 rounded-2xl text-sm text-white max-w-xs"
                         style={{ background: 'var(--color-primary)' }}>
                         {msg.text}
                       </div>
@@ -105,14 +121,16 @@ export default function Analyze() {
                   {msg.role === 'bot' && msg.type === 'error' && (
                     <BotBubble text={msg.text} isError />
                   )}
-
+                  
                   {msg.role === 'bot' && msg.type === 'select-tone' && (
                     <div className="flex flex-col gap-3">
                       <BotBubble text="ไม่สุภาพเลยนะคับ บบ อยากให้ช่วยแก้เป็นโทนไหนดีคับ" />
-                      <ToneSelector
-                        originalMessage={msg.originalMessage}
-                        onSelect={(original, tone) => handleSelectTone(original, tone, i)}
-                      />
+                      <div className="ml-11">
+                        <ToneSelector
+                          originalMessage={msg.originalMessage}
+                          onSelect={(original, tone) => handleSelectTone(original, tone, i)}
+                        />
+                      </div>
                     </div>
                   )}
 
@@ -127,12 +145,24 @@ export default function Analyze() {
                     </div>
                   )}
 
+                  {/* rewritten — แสดงผล + tone selector ให้เลือกใหม่ได้ */}
                   {msg.role === 'bot' && msg.type === 'rewritten' && (
-                    <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-3">
+                      <div className="ml-11 text-xs text-gray-400">
+                        Tone: {msg.appliedTone}
+                      </div>
                       <BotBubble text={msg.rewrittenMessage} />
+
+                      {/* เลือกโทนใหม่ได้อีกรอบ */}
+                      <div className="ml-11">
+                        <p className="text-xs text-gray-400 mb-2">Try another tone?</p>
+                        <ToneSelector
+                          originalMessage={msg.originalMessage}
+                          onSelect={(original, tone) => handleSelectTone(original, tone, i)}
+                        />
+                      </div>
                     </div>
                   )}
-
                 </div>
               ))}
 
@@ -146,10 +176,13 @@ export default function Analyze() {
                   </div>
                 </div>
               )}
+
+              <div ref={messagesEndRef} />
+
             </div>
           </div>
 
-          <div className="px-4 pb-6 pt-2" style={{ background: '#eef5f0' }}>
+          <div className="fixed bottom-0 left-0 w-full px-4 pb-6 pt-4 z-50" style={{ background: '#eef5f0' }}>
             <div className="max-w-2xl mx-auto">
               <InputBar message={message} setMessage={setMessage} handleSend={handleSend} />
             </div>

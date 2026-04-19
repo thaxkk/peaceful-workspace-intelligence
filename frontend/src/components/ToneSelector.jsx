@@ -6,7 +6,7 @@ const TONES = [
 
 export default function ToneSelector({ originalMessage, onSelect }) {
   return (
-    <div className="flex gap-2 ml-11 flex-wrap">
+    <div className="flex gap-2 ml-0 flex-wrap">
       {TONES.map((tone) => (
         <button
           key={tone.value}
