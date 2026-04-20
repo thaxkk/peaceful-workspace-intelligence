@@ -1,7 +1,7 @@
 const TONES = [
-  { label: '🏢 สุภาพทางการ', value: 'สุภาพทางการ' },
-  { label: '😊 เป็นกันเอง', value: 'เป็นกันเอง' },
-  { label: '⚡ กระชับ', value: 'กระชับ' },
+  { label: '🏢 formal', value: 'formal' },
+  { label: '😊 friendly', value: 'friendly' },
+  { label: '⚡ concise', value: 'concise' },
 ]
 
 export default function ToneSelector({ originalMessage, onSelect }) {
