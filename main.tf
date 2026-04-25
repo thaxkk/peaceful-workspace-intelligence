@@ -1,8 +1,4 @@
 # ==========================================
-# 📁 ไฟล์: main.tf
-# ==========================================
-
-# ==========================================
 # 0. Configuration & Data Sources
 # ==========================================
 provider "aws" {
@@ -203,12 +199,18 @@ resource "aws_iam_role_policy_attachment" "sagemaker_access" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSageMakerFullAccess"
 }
 
+resource "time_sleep" "wait_30_seconds" {
+  depends_on      = [aws_iam_role_policy_attachment.sagemaker_access]
+  create_duration = "30s"
+}
+
 resource "aws_sagemaker_model" "polite_guard" {
   name               = "${var.project_name}-hf-model"
   execution_role_arn = aws_iam_role.sagemaker_role.arn
+  
+  depends_on         = [time_sleep.wait_30_seconds]
 
   primary_container {
-    # 🔥 ดึง Image ตาม Region ที่เราเลือกไว้ใน var.aws_region
     image = var.sagemaker_images[var.aws_region] 
     
     environment = {
@@ -222,14 +224,13 @@ resource "aws_sagemaker_endpoint_configuration" "polite_guard_config" {
   name = "${var.project_name}-endpoint-config"
 
   production_variants {
-    variant_name          = "AllTraffic"
-    model_name            = aws_sagemaker_model.polite_guard.name
+    variant_name = "AllTraffic"
+    model_name   = aws_sagemaker_model.polite_guard.name
     
-    # 🔥 ลบ instance_type และ initial_instance_count ออก
-    # 🔥 แล้วใส่ serverless_config เข้าไปแทน
+    # Serverless Config
     serverless_config {
-      max_concurrency = 5    # จำนวนคนยิงพร้อมกันสูงสุด
-      memory_size_in_mb = 3072 # ขนาดแรม (โมเดล xlmr-large ใช้ประมาณนี้ครับ)
+      max_concurrency   = 5
+      memory_size_in_mb = 3072
     }
   }
 }
@@ -240,7 +241,7 @@ resource "aws_sagemaker_endpoint" "polite_guard_endpoint" {
 }
 
 # ==========================================
-# 5. ECS IAM Roles (FIXED: Bedrock + Marketplace)
+# 5. ECS IAM Roles (Bedrock + Marketplace)
 # ==========================================
 resource "aws_iam_role" "ecs_exec" {
   name = "${var.project_name}-exec-role"
@@ -262,7 +263,6 @@ resource "aws_iam_role_policy_attachment" "ecs_exec_attach" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
-# ✅ FIX: เพิ่ม Marketplace + Bedrock permission
 resource "aws_iam_role_policy" "ecs_ai_access" {
   name = "${var.project_name}-ai-access-policy"
   role = aws_iam_role.ecs_exec.id
@@ -273,9 +273,7 @@ resource "aws_iam_role_policy" "ecs_ai_access" {
       {
         Sid    = "AllowSageMakerInvoke",
         Effect = "Allow",
-        Action = [
-          "sagemaker:InvokeEndpoint"
-        ],
+        Action = ["sagemaker:InvokeEndpoint"],
         Resource = "*"
       },
       {
@@ -324,14 +322,16 @@ resource "aws_ecs_task_definition" "app" {
 
   container_definitions = jsonencode([{
     name      = "api-container"
-    image     = var.app_image_url # ดึง Image จากตัวแปรที่คุณเซ็ตไว้
+    image     = var.app_image_url
     essential = true
 
     environment = [
       { name = "SAGEMAKER_ENDPOINT_NAME", value = aws_sagemaker_endpoint.polite_guard_endpoint.name },
-      { name = "BEDROCK_MODEL_ID",        value = "anthropic.claude-3-haiku-20240307-v1:0" },
+      { name = "BEDROCK_MODEL_ID",        value = var.bedrock_model_id },
       { name = "AWS_REGION",              value = var.aws_region },
-      { name = "LOG_LEVEL",               value = "info" }
+      { name = "LOG_LEVEL",               value = "info" },
+      { name = "FRIEND_BEDROCK_ACCESS_KEY", value = var.friend_bedrock_access_key },
+      { name = "FRIEND_BEDROCK_SECRET_KEY", value = var.friend_bedrock_secret_key }
     ]
 
     portMappings = [{ containerPort = var.container_port, hostPort = var.container_port }]
@@ -351,7 +351,7 @@ resource "aws_ecs_service" "api_svc" {
   name            = "${var.project_name}-service"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.app.arn
-  desired_count   = 1
+  desired_count   = 2 
   launch_type     = "FARGATE"
   
   network_configuration {
@@ -367,7 +367,7 @@ resource "aws_ecs_service" "api_svc" {
 }
 
 # ==========================================
-# 7. Outputs (สิ่งที่จะแสดงผลตอนสร้างเสร็จ)
+# 7. Outputs
 # ==========================================
 output "alb_dns_url" { 
   description = "URL ของ Load Balancer (เอาไปยิง API ผ่าน Postman)"
