@@ -109,9 +109,9 @@ export default function Playlist() {
                 <div className="flex items-center justify-between px-1">
                   <span
                     className="text-xs px-3 py-1 rounded-full font-medium"
-                    style={{ background: 'var(--color-accent)', color: 'var(--color-primary)' }}
+                    style={{ background: '#fff', color: 'var(--color-primary)' }}
                   >
-                    {item.platform === 'spotify' ? '🎵 Spotify' : '▶ YouTube'}
+                    {item.platform === 'spotify' ? '🎷 Spotify' : '▶ YouTube'}
                   </span>
                   <button
                     onClick={() => handleRemove(i)}

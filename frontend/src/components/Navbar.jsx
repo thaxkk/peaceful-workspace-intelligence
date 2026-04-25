@@ -12,6 +12,7 @@ export default function Navbar() {
 
   return (
     <nav className="fixed top-0 left-0 w-full z-50 flex justify-end items-center px-8 py-4 gap-2 ">
+      
       {tabs.map((tab) => {
         const isActive = location.pathname === tab.path
         return (

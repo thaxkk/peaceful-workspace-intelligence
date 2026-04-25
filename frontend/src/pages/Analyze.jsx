@@ -7,6 +7,19 @@ import ToneSelector from '../components/ToneSelector'
 import { checkFormality, rewriteMessage } from '../services/api'
 import logo from '../assets/image.png'
 
+
+const cleanQuotes = (text) => {
+  if (!text) return text; 
+
+  let cleanText = text.trim(); 
+
+  if (cleanText.startsWith('"') && cleanText.endsWith('"')) {
+    return cleanText.slice(1, -1);
+  }
+
+  return cleanText;
+};
+
 export default function Analyze() {
   const [message, setMessage] = useState('')
   const [messages, setMessages] = useState([])
@@ -61,14 +74,16 @@ export default function Analyze() {
     )
     try {
       const result = await rewriteMessage(originalMessage, tone)
+
+      const finalMessage = cleanQuotes(result.rewrittenMessage);
       setMessages((prev) =>
         prev.map((m, i) =>
           i === msgIndex ? {
             role: 'bot',
             type: 'rewritten',
             appliedTone: result.appliedTone,
-            rewrittenMessage: result.rewrittenMessage,
-            originalMessage: originalMessage, // ← เก็บไว้ให้เลือกโทนใหม่ได้
+            rewrittenMessage: finalMessage,
+            originalMessage: originalMessage,
           } : m
         )
       )
