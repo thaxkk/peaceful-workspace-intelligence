@@ -1,12 +1,27 @@
-# Python caches
+# ==========================================
+# OpenTofu / Terraform
+# ==========================================
+# ห้ามเอาไฟล์ Binary และ Provider ขึ้นเด็ดขาด (ตัวที่ทำให้พัง)
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+
+# ==========================================
+# Node.js
+# ==========================================
+node_modules/
+dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ==========================================
+# Python
+# ==========================================
 __pycache__/
 *.py[cod]
 *$py.class
-
-# Environment variables & Secrets (สำคัญมาก ห้ามหลุดขึ้น Git)
-.env
-.env.*
-*.pem
 
 # Virtual Environments (Conda / Venv)
 venv/
@@ -14,6 +29,15 @@ venv/
 env/
 miniconda3/
 .conda/
+
+# ==========================================
+# ความลับและอื่นๆ (สำคัญมาก!)
+# ==========================================
+.env
+.env.*
+*.pem
+.tfvars
+terraform.tfvars
 
 # VS Code settings
 .vscode/
