@@ -15,7 +15,11 @@ app.use(cors());
 app.use(express.json());
 
 const sagemakerClient = new SageMakerRuntimeClient({ region: process.env.AWS_REGION || 'ap-southeast-1' });
-const bedrockClient = new BedrockRuntimeClient({ region: process.env.AWS_REGION || 'ap-southeast-1' });
+const bedrockClient = new BedrockRuntimeClient({ region: process.env.AWS_REGION || 'ap-southeast-1', 
+  credentials: {
+        accessKeyId: process.env.FRIEND_BEDROCK_ACCESS_KEY as string,
+        secretAccessKey: process.env.FRIEND_BEDROCK_SECRET_KEY as string
+  } });
 const TONE_INSTRUCTIONS: Record<string, string> = {
   formal: `You are a professional workplace text rewriter.
 CRITICAL RULES:
