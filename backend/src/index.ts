@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import { SageMakerRuntimeClient, InvokeEndpointCommand } from '@aws-sdk/client-sagemaker-runtime';
 import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
+import { CloudWatchLogsClient, FilterLogEventsCommand } from '@aws-sdk/client-cloudwatch-logs';
 
 dotenv.config();
 
@@ -20,6 +21,9 @@ const bedrockClient = new BedrockRuntimeClient({ region: process.env.AWS_REGION 
         accessKeyId: process.env.FRIEND_BEDROCK_ACCESS_KEY as string,
         secretAccessKey: process.env.FRIEND_BEDROCK_SECRET_KEY as string
   } });
+  const cloudWatchClient = new CloudWatchLogsClient({ region: process.env.AWS_REGION || 'ap-southeast-1' });
+const LOG_GROUP_NAME = process.env.CLOUDWATCH_LOG_GROUP || '/ecs/cloud-backend-app';
+
 const TONE_INSTRUCTIONS: Record<string, string> = {
   formal: `You are a professional workplace text rewriter.
 CRITICAL RULES:
@@ -45,7 +49,7 @@ CRITICAL RULES:
 4. ONLY OUTPUT THE REWRITTEN TEXT.`,
 };
 
-const mockSageMakerCheckFormality = async (text: string): Promise<boolean> => {
+const mockSageMakerCheckFormality = async (text: string): Promise<any> => {
   const command = new InvokeEndpointCommand({
     EndpointName: process.env.SAGEMAKER_ENDPOINT_NAME!,
     ContentType: 'application/json',
@@ -55,11 +59,10 @@ const mockSageMakerCheckFormality = async (text: string): Promise<boolean> => {
   const response = await sagemakerClient.send(command);
   const result = JSON.parse(Buffer.from(response.Body!).toString('utf-8'));
 
-  console.log(`SageMaker response: ${result[0].label}, score: ${result[0].score}`);
-
-  // แก้จาก result.label → result[0].label
-  const isFormal = result[0].label != 'toxic';
-  return isFormal;
+  const score = result[0].score;
+  const isFormal = result[0].label !== 'toxic';
+  
+  return { isFormal, score };
 };
 
 const mockBedrockRewrite = async (text: string, tone: string): Promise<string> => {
@@ -117,14 +120,15 @@ app.post('/api/check-formality', async (req: Request, res: Response) => {
     const { message } = req.body;
     if (!message) return res.status(400).json({ error: 'กรุณาส่ง message มาด้วย' });
 
-    const isFormal = await mockSageMakerCheckFormality(message);
+    const { isFormal, score } = await mockSageMakerCheckFormality(message);
 
     // [เพิ่มใหม่] เงื่อนไขการเก็บ Log: เก็บเฉพาะตอนที่เป็น Formal
     if (isFormal) {
       await saveDashboardLog({
         type: 'FORMAL_MESSAGE',
         originalMessage: message,
-        isFormal: true
+        isFormal: true,
+        score: score
       });
     }
 
@@ -158,6 +162,87 @@ app.post('/api/rewrite', async (req: Request, res: Response) => {
   } catch (error) {
     logger.error({ err: error, msg: 'Error in rewrite' });
     res.status(500).json({ error: 'เกิดข้อผิดพลาดในการแปลงข้อความ' });
+  }
+});
+
+app.get('/api/logs', async (req: Request, res: Response) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+
+  try {
+    let allEvents: any[] = [];
+    let nextToken: string | undefined = undefined;
+
+    // [เพิ่มใหม่] กำหนดเวลาดึงข้อมูลย้อนหลัง 7 วัน (ป้องกัน API โหลดช้าถ้า Log เยอะเกิน)
+    const startTime = new Date();
+    startTime.setDate(startTime.getDate() - 7);
+
+    // [เพิ่มใหม่] วนลูปดึงข้อมูลทุกหน้า จนกว่า nextToken จะหมด (แก้ปัญหา Log มาไม่ครบ)
+    do {
+      const queryParams = {
+        logGroupName: LOG_GROUP_NAME,
+        filterPattern: '{ $.event = "DASHBOARD_ANALYTICS" }', 
+        startTime: startTime.getTime(),
+        nextToken: nextToken,
+      };
+
+      // @ts-ignore : ปิดการแจ้งเตือน TS ของบรรทัดนี้ทิ้งไปเลย และบังคับให้เป็น any
+      const fetchCommand = new FilterLogEventsCommand(queryParams) as any;
+      
+      const response: any = await cloudWatchClient.send(fetchCommand);
+      
+      if (response.events) {
+        allEvents = allEvents.concat(response.events);
+      }
+      
+      nextToken = response.nextToken;
+    } while (nextToken);
+
+    if (allEvents.length === 0) {
+      return res.json([]);
+    }
+
+    let formattedLogs = allEvents.map(event => {
+      try {
+        const logData = JSON.parse(event.message || '{}');
+        return {
+          timestamp: logData.timestamp || new Date(event.timestamp!).toISOString(),
+          type: logData.type || null,
+          originalMessage: logData.originalMessage || null,
+          rewrittenMessage: logData.rewrittenMessage || null,
+          appliedTone: logData.appliedTone || null,
+          isFormal: logData.isFormal ?? false,
+          score: logData.score || null
+        };
+      } catch (e) {
+        return null;
+      }
+    }).filter(item => item !== null);
+
+    // เรียงลำดับจากเก่าไปใหม่ล่าสุด
+    formattedLogs.sort((a, b) => new Date(a!.timestamp).getTime() - new Date(b!.timestamp).getTime());
+
+    return res.json(formattedLogs);
+
+  } catch (error: any) {
+    if (error.name === 'ResourceNotFoundException') {
+      logger.warn('Log group not found. Returning mock data for frontend testing.');
+      return res.json([
+        {
+          timestamp: new Date().toISOString(),
+          type: "REWRITTEN_MESSAGE",
+          originalMessage: "ไอแก่บ้าน้ำลาย",
+          rewrittenMessage: "คุณลุงพูดเยอะจังเลยครับ",
+          appliedTone: "friendly",
+          isFormal: false,
+          score: null
+        }
+      ]);
+    }
+
+    logger.error({ err: error, msg: 'Error fetching logs from CloudWatch' });
+    res.status(500).json({ error: 'ไม่สามารถดึงข้อมูล Log ได้' });
   }
 });
 
