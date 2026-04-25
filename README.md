@@ -121,14 +121,6 @@ The app starts on `http://localhost:5173`.
 ```bash
 cd backend
 docker build -t peaceful-workspace-backend .
-docker run -p 3000:3000 --env-file .env peaceful-workspace-backend
-```
-
-**Frontend:**
-```bash
-cd frontend
-docker build --build-arg VITE_API_URL=http://your-alb-url -t peaceful-workspace-frontend .
-docker run -p 80:80 peaceful-workspace-frontend
 ```
 
 ---
@@ -139,9 +131,6 @@ docker run -p 80:80 peaceful-workspace-frontend
 cd tofu
 
 tofu init
-tofu plan -var="app_image_url=<ECR_IMAGE_URL>" \
-          -var="friend_bedrock_access_key=<KEY>" \
-          -var="friend_bedrock_secret_key=<SECRET>"
 
 tofu apply
 ```

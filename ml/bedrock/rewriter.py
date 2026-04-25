@@ -50,7 +50,7 @@ Rewritten message:"""
     })
 
     response = client.invoke_model(
-        modelId="anthropic.claude-3-haiku-20240307-v1:0",
+        modelId="global.anthropic.claude-haiku-4-5-20251001-v1:0",
         body=body,
         contentType="application/json",
         accept="application/json"
