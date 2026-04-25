@@ -1,0 +1,28 @@
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment variables & Secrets (สำคัญมาก ห้ามหลุดขึ้น Git)
+.env
+.env.*
+*.pem
+
+# Virtual Environments (Conda / Venv)
+venv/
+.venv/
+env/
+miniconda3/
+.conda/
+
+# VS Code settings
+.vscode/
+
+# Mac OS specific files
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+
+# Logs
+*.log
