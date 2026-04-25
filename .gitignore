@@ -17,9 +17,36 @@ yarn-debug.log*
 yarn-error.log*
 
 # ==========================================
+# Python
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments (Conda / Venv)
+venv/
+.venv/
+env/
+miniconda3/
+.conda/
+
+# ==========================================
 # ความลับและอื่นๆ (สำคัญมาก!)
 # ==========================================
 .env
+.env.*
+*.pem
 .tfvars
 terraform.tfvars
+
+# VS Code settings
+.vscode/
+
+# Mac OS specific files
 .DS_Store
+.AppleDouble
+.LSOverride
+Icon
+
+# Logs
+*.log
