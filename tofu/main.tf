@@ -1,3 +1,4 @@
+
 # ==========================================
 # 0. Configuration & Data Sources
 # ==========================================
@@ -199,6 +200,7 @@ resource "aws_iam_role_policy_attachment" "sagemaker_access" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSageMakerFullAccess"
 }
 
+# ✅ FIX: สั่งให้ Tofu รอ 30 วินาที เพื่อให้ AWS กระจายสิทธิ์ IAM เสร็จสมบูรณ์
 resource "time_sleep" "wait_30_seconds" {
   depends_on      = [aws_iam_role_policy_attachment.sagemaker_access]
   create_duration = "30s"
@@ -208,10 +210,11 @@ resource "aws_sagemaker_model" "polite_guard" {
   name               = "${var.project_name}-hf-model"
   execution_role_arn = aws_iam_role.sagemaker_role.arn
   
+  # ✅ บังคับให้รอ Time Sleep ก่อนเริ่มสร้างโมเดล
   depends_on         = [time_sleep.wait_30_seconds]
 
   primary_container {
-    image = var.sagemaker_images[var.aws_region] 
+    image = "763104351884.dkr.ecr.${var.aws_region}.amazonaws.com/huggingface-pytorch-inference:2.1.0-transformers4.37.0-cpu-py310-ubuntu22.04" 
     
     environment = {
       HF_MODEL_ID = "textdetox/xlmr-large-toxicity-classifier"
@@ -300,6 +303,28 @@ resource "aws_iam_role_policy" "ecs_ai_access" {
   })
 }
 
+resource "aws_iam_role_policy" "ecs_cloudwatch_read_access" {
+  name = "${var.project_name}-cw-read-policy"
+  role = aws_iam_role.ecs_exec.id # ผูกเข้ากับ Role ecs_exec ของคุณเป๊ะๆ
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid    = "AllowCloudWatchLogRead",
+        Effect = "Allow",
+        Action = [
+          "logs:FilterLogEvents",
+          "logs:GetLogEvents",
+          "logs:DescribeLogStreams"
+        ],
+        # ใช้ Dynamic ARN ของ Log Group ที่คุณสร้างไว้ด้านล่างได้เลย
+        Resource = "${aws_cloudwatch_log_group.logs.arn}:*"
+      }
+    ]
+  })
+}
+
 # ==========================================
 # 6. ECS Fargate Cluster & Service
 # ==========================================
@@ -331,7 +356,8 @@ resource "aws_ecs_task_definition" "app" {
       { name = "AWS_REGION",              value = var.aws_region },
       { name = "LOG_LEVEL",               value = "info" },
       { name = "FRIEND_BEDROCK_ACCESS_KEY", value = var.friend_bedrock_access_key },
-      { name = "FRIEND_BEDROCK_SECRET_KEY", value = var.friend_bedrock_secret_key }
+      { name = "FRIEND_BEDROCK_SECRET_KEY", value = var.friend_bedrock_secret_key },
+      { name = "CLOUDWATCH_LOG_GROUP", value = var.cloudwatch_log_group }
     ]
 
     portMappings = [{ containerPort = var.container_port, hostPort = var.container_port }]
@@ -351,6 +377,7 @@ resource "aws_ecs_service" "api_svc" {
   name            = "${var.project_name}-service"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.app.arn
+  # ✅ FIX: แยกร่าง Fargate เป็น 2 เครื่อง (AZ A และ AZ B) เพื่อ High Availability 100%
   desired_count   = 2 
   launch_type     = "FARGATE"
   

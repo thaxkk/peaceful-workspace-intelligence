@@ -27,30 +27,26 @@ variable "app_image_url" {
   type        = string
 }
 
-variable "sagemaker_images" {
-  type = map(string)
-  default = {
-    "ap-southeast-1" = "763104351884.dkr.ecr.ap-southeast-1.amazonaws.com/huggingface-pytorch-inference:2.1.0-transformers4.37.0-cpu-py310-ubuntu22.04"
-    "us-east-1"      = "763104351884.dkr.ecr.us-east-1.amazonaws.com/huggingface-pytorch-inference:2.1.0-transformers4.32.2-cpu-py310-ubuntu22.04"
-    "ap-northeast-1" = "763104351884.dkr.ecr.ap-northeast-1.amazonaws.com/huggingface-pytorch-inference:2.1.0-transformers4.32.2-cpu-py310-ubuntu22.04"
-    # เพิ่ม Region อื่นๆ ได้ตามต้อง
-  }
-}
-
 variable "bedrock_model_id" {
   description = "ID ของ Model ใน Bedrock"
   type        = string
-  default     = "anthropic.claude-3-haiku-20240307-v1:0"
+  default     = "global.anthropic.claude-haiku-4-5-20251001-v1:0"
 }
 
 variable "friend_bedrock_access_key" {
   description = "Access Key ของเพื่อน"
   type        = string
-  sensitive   = true
+  sensitive   = true 
 }
 
 variable "friend_bedrock_secret_key" {
   description = "Secret Key ของเพื่อน"
   type        = string
   sensitive   = true
+}
+
+variable "cloudwatch_log_group" {
+  description = "log_group_path"
+  type        = string
+  default     = "/ecs/peaceful-workspace"
 }
