@@ -25,7 +25,7 @@ Frontend (React + Vite)        ← Hosted on S3 / served via Nginx (Docker)
     ▼ REST API
 Backend (Express + TypeScript)  ← ECS Fargate (private subnet, behind ALB)
     ├── /api/check-formality    → AWS SageMaker (xlmr-large-toxicity-classifier)
-    ├── /api/rewrite            → AWS Bedrock (Claude 3)
+    ├── /api/rewrite            → AWS Bedrock (Claude 4.5)
     └── /api/logs               → AWS CloudWatch Logs
 ```
 
@@ -40,7 +40,7 @@ Infrastructure is provisioned with **OpenTofu (Terraform)** and includes VPC, su
 | Frontend | React 19, Vite 8, Tailwind CSS 4, Recharts, React Router |
 | Backend | Node.js, Express 5, TypeScript 6 |
 | AI — Toxicity Detection | HuggingFace `textdetox/xlmr-large-toxicity-classifier` on AWS SageMaker Serverless |
-| AI — Rewriting | Anthropic Claude 3 (Sonnet / Haiku) via AWS Bedrock |
+| AI — Rewriting | Anthropic Claude Haiku 4.5 via AWS Bedrock |
 | Logging | AWS CloudWatch Logs + Pino |
 | Infrastructure | OpenTofu, AWS ECS Fargate, ALB, VPC, NAT Gateway |
 | Containerization | Docker (multi-stage builds), Nginx |
