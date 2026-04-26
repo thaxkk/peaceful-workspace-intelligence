@@ -36,8 +36,8 @@ miniconda3/
 .env
 .env.*
 *.pem
-.tfvars
-terraform.tfvars
+# .tfvars
+# terraform.tfvars
 
 # VS Code settings
 .vscode/
