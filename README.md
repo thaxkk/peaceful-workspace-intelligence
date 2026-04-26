@@ -1,4 +1,4 @@
-Markdown# 🕊️ Peaceful Workspace Intelligence
+# 🕊️ Peaceful Workspace Intelligence
 
 An AI-powered workplace communication assistant that detects toxic or impolite messages and rewrites them into professional, friendly, or concise alternatives — available in both Thai and English.
 
