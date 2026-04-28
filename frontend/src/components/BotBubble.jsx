@@ -5,14 +5,29 @@ export default function BotBubble({ text, isError }) {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = async () => {
-    try {
+  if (!text) return
+
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
       await navigator.clipboard.writeText(text)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000) // reset หลัง 2 วิ
-    } catch {
-      console.error('copy failed')
+    } else {
+      // fallback สำหรับ HTTP / IP
+      const el = document.createElement('textarea')
+      el.value = text
+      el.style.position = 'fixed'
+      el.style.left = '-9999px'
+      document.body.appendChild(el)
+      el.focus()
+      el.select()
+      document.execCommand('copy')
+      document.body.removeChild(el)
     }
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  } catch (err) {
+    console.error('copy failed:', err)
   }
+}
 
   return (
     <div className="flex flex-col gap-1">
